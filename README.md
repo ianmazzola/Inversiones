@@ -66,46 +66,88 @@ for i, bloque in enumerate(sublistas):
         datos.append(data)
     
     df_bloque = pd.DataFrame(datos).set_index("Ticker")
-    dfs.append(df_bloque)  # Guardamos el DataFrame para este bloque
+    dfs.append(df_bloque)  # Almacenar Dataframes por bloques
 
 # Creamos un único dataframe con todos los datos
 df_final = pd.concat(dfs)
 
 df_final.to_csv("Acciones.csv")
-
-
+```
+Se crean sublistas y se itera creando dataframes más pequeños para evitar bugs o fallas a la hora de consultar con la API.
 
 2. **Preprocesamiento**  
-   - Limpieza y tratamiento de valores faltantes.
-   - Cálculo de métricas derivadas (growth, ratios financieros, etc.).
-   - Estandarización de variables con `StandardScaler`.
-3. **Cálculo del score**  
-   - Score ponderado en base a métricas seleccionadas.
-   - Análisis de sensibilidad del score a distintas variables.
-4. **EDA y visualizaciones**  
-   - Distribuciones, correlaciones y ranking de empresas.
-5. **Casos de estudio**  
-   - Ejemplo: evolución del score de empresas como NVIDIA o Microsoft en periodos clave.
-6. **Conclusiones e insights**  
-   - Ejemplo: limitación detectada en la estandarización “contemporánea” del score y alternativas para resolverlo.
+   - **Gestión de valores faltantes**:  
+  - No hubo eliminación de ninguna columna, debido a que no tenían un gran porcentaje de valores nulos.  
+  - Imputación utilizando medianas y medias según las distribuciones de cada variable.
+  - Imputación utilizando ceros, debido al significado del valor nulo de dicha variable. 
 
-## 📈 Insights generados
-- El score estandarizado es útil para comparar activos dentro de un mismo periodo, pero su comparabilidad histórica puede verse afectada.
-- Identificación de empresas con métricas sólidas en determinados sectores.
-- Ejemplos de cómo variaciones en *earnings growth*, *debt-to-equity* u otras métricas impactan el ranking.
+- **Detección y tratamiento de outliers**:  
+  - Identificación de valores extremos mediante diagramas de caja (*boxplots*) y análisis de rango intercuartílico (IQR).  
+  - Ajuste o eliminación de valores que distorsionaban el análisis, manteniendo coherencia en la comparación entre empresas.  
+
+![Outliers](Outliers.png)
+
+3. **Análisis Exploratorio de Datos (EDA)**  
+Con el dataset limpio se realizó un análisis exploratorio para comprender la distribución de las métricas y las relaciones entre ellas:
+
+- **Distribuciones individuales**: histogramas y *boxplots* para variables clave como *earnings growth*, *ROE*, *debt-to-equity*, *PE* y *PEG*.  
+- **Mapas de correlaciones**: identificación de relaciones significativas entre indicadores de rentabilidad, apalancamiento y valuación.  
+- **Comparaciones sectoriales**: visualizaciones *scatter* (por ejemplo, *ROE* vs *Price-to-Book*) diferenciadas por sector, tamaño de empresa o múltiplos de valuación.
+- **Análisis de relaciones esperadas vs. atípicas**: detección de empresas que se desvían de patrones sectoriales, potencialmente indicando oportunidades o riesgos.
+
+4. **Score**  
+Para ordenar las empresas según su atractivo relativo, se desarrolló un **score ponderado** que combina métricas de crecimiento, rentabilidad, apalancamiento y valuación:
+
+- **Selección de métricas**: *earnings growth*, *ROE*, *debt-to-equity*, *trailing PE*, *forward PE*, *PEG*, *Price-to-Book*, entre otras.
+- **Estandarización de variables**: uso de `StandardScaler` para garantizar comparabilidad entre métricas con escalas distintas.
+- **Asignación de ponderaciones**: pesos definidos según relevancia teórica y empírica en la valoración de empresas.
+- **Cálculo del ranking**: empresas ordenadas de mayor a menor score, identificando las más atractivas dentro de cada sector.
+
+5. **Casos de estudio**  
+Se aplicó el score a eventos históricos para evaluar su capacidad predictiva y su utilidad en contextos reales:
+
+- **Apple (2016)**: simulación del score en el momento de la inversión de Warren Buffett, mostrando fundamentos sólidos previos a un periodo de gran revalorización.
+- **NVIDIA (2017 y 2023)**: análisis antes y después de hitos clave como el boom de la inteligencia artificial, evidenciando cambios en métricas y posición en el ranking.
+- **Microsoft (2025)**: evaluación en un contexto de impacto por aranceles, analizando cómo el score refleja cambios en sus fundamentales.
+
+Estos casos permiten validar el score como herramienta de *screening* inicial y entender sus limitaciones, especialmente en relación a la estandarización basada en un periodo de referencia fijo.
+
+![Microsoft](Microsoft.png)
+
+## 📊 Visualizaciones clave
+
+**1. Mapa de correlaciones de métricas financieras**  
+Identifica relaciones entre indicadores clave.  
+![Mapa de correlaciones](Mapa_Correlaciones.png)
+
+**2. Relación *ROE* vs *Price-to-Book* – Sector Tecnológico**  
+Muestra cómo empresas tecnológicas se distribuyen en función de rentabilidad y valuación, destacando potenciales oportunidades y riesgos.  
+![ROE vs P/B Tecnología](PB_Tecnologico.png)
+
+**3. Relación *ROE* vs *Price-to-Book* – Sector Financiero**  
+Análisis equivalente para el sector financiero, con patrones y dispersiones distintas al tecnológico.  
+![ROE vs P/B Financiero](PB_Financiero.png)
+
+**4. Relación entre *Trailing PE* y *Forward PE***  
+Incluye la línea y = x como referencia para identificar si el mercado espera crecimiento o no de las empresas de Tecnología y Real Estate.  
+![PE Ratio comparativo](PE_Ratio.png)
 
 
 ## 🛠 Tecnologías y librerías
-- Python 3.x
+- Python 
 - Pandas, NumPy
 - Matplotlib, Seaborn
 - scikit-learn
 - yfinance
+- Jupyter Notebook
 
-## 🚀 Próximos pasos
-- Modularizar cálculo de score y guardar scaler de referencia.
-- Añadir pruebas unitarias mínimas para el score.
-- Mejorar documentación de cada métrica y su impacto.
+## 🚀 Posibles mejoras futuras
+
+- **Dashboard interactivo**: implementación en Power BI o Tableau para explorar empresas y métricas de forma dinámica.
+- **Ampliación del universo de empresas**: incluir empresas de mercados emergentes, índices sectoriales adicionales (Merval, Mercados de China o Brasil, etc.) y small caps para ampliar el alcance del análisis.
+- **Optimización y ajuste flexible de ponderaciones**:  permitir modificar los coeficientes del score para representar distintas filosofías de inversión. Esto podría dar pie a un proyecto que recomiende ponderaciones óptimas según el perfil de riesgo y los objetivos del usuario.
+- **Actualizaciones**: buscar la forma de descargar nuevos datos, modificar el universo y recalcular el score de forma periódica.
+
 
 ---
 *Autor: Ian Lautaro Mazzola*  
