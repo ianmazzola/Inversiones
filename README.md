@@ -76,12 +76,12 @@ df_final.to_csv("Acciones.csv")
 Se crean sublistas y se itera creando dataframes más pequeños para evitar bugs o fallas a la hora de consultar con la API.
 
 2. **Preprocesamiento**  
-   - **Gestión de valores faltantes**:  
+    - **Gestión de valores faltantes**:  
   - No hubo eliminación de ninguna columna, debido a que no tenían un gran porcentaje de valores nulos.  
   - Imputación utilizando medianas y medias según las distribuciones de cada variable.
   - Imputación utilizando ceros, debido al significado del valor nulo de dicha variable. 
 
-- **Detección y tratamiento de outliers**:  
+    - **Detección y tratamiento de outliers**:  
   - Identificación de valores extremos mediante diagramas de caja (*boxplots*) y análisis de rango intercuartílico (IQR).  
   - Ajuste o eliminación de valores que distorsionaban el análisis, manteniendo coherencia en la comparación entre empresas.  
 
